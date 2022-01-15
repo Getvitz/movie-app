@@ -1,3 +1,8 @@
+html body {
+    background-color: #e5e5e5;
+    text-align: center;
+}
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -6,4 +11,8 @@
     position: relative;
     padding: 0 36px;
     background-color: #FFF;
+}
+
+.container .spinner {
+    margin-top: 20px;
 }
