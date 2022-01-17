@@ -1,19 +1,24 @@
 import React from "react";
 import { Component } from "react/cjs/react.production.min";
-import { Alert, Spin } from "antd";
+import { Alert, Spin, Pagination } from "antd";
+import { format, parseISO } from 'date-fns';
 import propTypes from "prop-types";
 import MovieList from "../movieList/movieList";
 import "./app.css"
 import ApiClient from "../apiClient";
 import Header from "../header";
 import Search from "../search";
-import Paginations from "../pagination";
+// import Paginations from "../pagination";
+import noImageYet from "./no-image-yet.jpg"
 
 export default class App extends Component {
     state = {
         moviesData: [],
+        searchInput: '',
+        pageNumber: 1,
+        pagesTotal: 0,
         loading: true,
-        error: false
+        error: false,
     };
 
     apiClient = new ApiClient();
@@ -21,23 +26,59 @@ export default class App extends Component {
     componentDidMount() {
         this.getMoviesData();
       }
-    
-    getMoviesData() {
-        this.apiClient.getDataFromServer().then((movies) => {
-          movies.forEach((element) => {
-            this.addMovieToList(element);
+
+    getMoviesData = () => {
+      const { searchInput, pageNumber } = this.state;
+      this.setState({
+        moviesData: [],
+        loading: true,
+        error: false,
+      });
+      if (searchInput === '') {
+        this.apiClient.startMovies(pageNumber).then((movies) => {
+          this.setState({
+            pagesTotal: movies.total_pages,
+            pageNumber,
           });
-        })
-        .catch(this.onError);
+          movies.results.forEach((element) => {
+            this.addMovieToList(element);
+            });
+        });
+      } else {
+        this.apiClient
+          .searchMovies(searchInput, pageNumber)
+          .then((movies) => {
+            this.setState({
+              pagesTotal: movies.total_pages,
+              pageNumber,
+            });
+            if (movies.results.length === 0) {
+              this.setState({
+                loading: false,
+              });
+            }
+            movies.results.forEach((elm) => {
+             this.addMovieToList(elm);
+            });
+          })
+          .catch(this.onError);
       }
+    };
 
     createMovie = (movie) =>{
-        const moviePoster = `${this.apiClient.apiImg}${movie.poster_path}`
+        let releaseDate = 'No realease information' 
+        if(movie.release_date) {
+          releaseDate = format(parseISO(movie.release_date), 'MMMM dd, yyyy');
+        }
+        let moviePoster = `${noImageYet}` 
+        if(movie.poster_path) {
+          moviePoster = `${this.apiClient.apiImg}${movie.poster_path}`
+        }
         return {
             id: movie.id,
             moviePoster,
             title: movie.title,
-            releaseDate: movie.release_date,
+            releaseDate,
             overview: movie.overview,
             rating: movie.vote_average
         }
@@ -60,16 +101,39 @@ export default class App extends Component {
       });
     }
 
+    onSearchInput = (searchInput) => {
+      this.setState(
+        {
+          searchInput,
+          pageNumber: 1,
+        },
+        () => {
+          this.getMoviesData();
+        }
+      );
+    }
+
+    onPageChange = (page) => {
+    this.setState(
+      {
+        pageNumber: page,
+      },
+      () => {
+          this.getMoviesData();
+        }
+    );
+    }
+
   render() {
-      const {moviesData, loading, error} = this.state
+      const {moviesData, loading, error, pageNumber, pagesTotal} = this.state
       const hasData = !(loading || error)
       const spinner = loading? <Spin tip="Loading..." className="spinner" size='large'/> : null;
-      const content = hasData? <MoviesLoaded moviesData={moviesData} /> : null;
+      const content = hasData? <MoviesLoaded moviesData={moviesData} pageNumber={pageNumber} pagesTotal={pagesTotal} loading={loading} onPageChange={this.onPageChange} /> : null;
       const showError = error? <Alert message="Error" description="Oops! Something went wrong!" type="error" showIcon /> : null;
     return (
       <div className="container">
         <Header />
-        <Search placeholder="Type to search..." />
+        <Search onSearchInput={this.onSearchInput} />
         {spinner}
         {showError}
         {content}
@@ -79,14 +143,29 @@ export default class App extends Component {
 }
 
 const MoviesLoaded = function MoviesLoaded(props) {
-  const {moviesData} = props
+  const {moviesData, pagesTotal, loading, pageNumber, onPageChange} = props
+  const pagination =
+      pagesTotal > 0 && !loading ? (
+        <Pagination
+          defaultCurrent={1}
+          current={pageNumber}
+          total={pagesTotal}
+          showSizeChanger={false}
+          onChange={onPageChange}
+        />
+      ) : null;
   return (<>
-            <MovieList
-              moviesData={moviesData} />
-            <Paginations />
+            <MovieList moviesData={moviesData} />
+            {pagination}
           </>
 )}
 
 MoviesLoaded.propTypes = {
-  moviesData: propTypes.instanceOf(Array).isRequired
+  moviesData: propTypes.instanceOf(Array).isRequired,
+  pageNumber: propTypes.number.isRequired,
+  pagesTotal: propTypes.number.isRequired,
+  loading: propTypes.bool.isRequired,
+  onPageChange: propTypes.func.isRequired
 }
+
+

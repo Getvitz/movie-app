@@ -1,16 +1,16 @@
 import React from 'react';
 import './movieCard.css';
 import { Card, Typography } from 'antd';
-import { format, parseISO } from 'date-fns';
+// import { format, parseISO } from 'date-fns';
 import propTypes from 'prop-types';
 
 const MovieCard = ({ moviesData }) => {
     const { Text } = Typography;
-    const filmList = moviesData.map((item) => {
+    const filmList = moviesData.map((movie) => {
       const tag = 'Drama';
-      const { moviePoster, id, title, releaseDate, overview } = item;
+      const { moviePoster, id, title, releaseDate, overview } = movie;
   
-      const releaseDateFormatted = format(parseISO(releaseDate), 'MMMM dd, yyyy');
+      // const releaseDateFormatted = format(parseISO(releaseDate), 'MMMM dd, yyyy');
   
       function reduceOverview(overviewLength, useWordBoundary) {
         if (this.length <= overviewLength) {
@@ -29,7 +29,7 @@ const MovieCard = ({ moviesData }) => {
         <div className="card-movie-title">{title}</div>
 
         <Text type="secondary" className="card-release-date">
-          {releaseDateFormatted}
+          {releaseDate}
         </Text>
         <div className="card-tags">{tag}</div>
         <Text className="card-overview">{overviewReduced}</Text>

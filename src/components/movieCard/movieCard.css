@@ -123,7 +123,7 @@ div .ant-card-body::after {
     grid-row: 4/5;
     font-size: 14px;
     align-self: stretch;
-    justify-self: end;
+    justify-self: stretch;
 
 }
 @media (max-width: 900px ) {

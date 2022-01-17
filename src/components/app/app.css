@@ -16,3 +16,7 @@ html body {
 .container .spinner {
     margin-top: 20px;
 }
+
+.container .ant-pagination {
+    margin-top: 34px;
+}

@@ -1,3 +1,3 @@
-import Search from "antd/lib/transfer/search";
+import Search from "./search";
 
 export default Search;
