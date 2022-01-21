@@ -1,3 +1,3 @@
-import ApiClient from "./apiClient";
+import ApiClient from './apiClient';
 
 export default ApiClient;

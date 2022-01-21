@@ -3,7 +3,4 @@ import ReactDOM from 'react-dom';
 import App from './components/app';
 import 'antd/dist/antd.min.css';
 
-ReactDOM.render(
-    <App />,
-  document.getElementById('root')
-);
+ReactDOM.render(<App />, document.getElementById('root'));

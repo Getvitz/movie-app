@@ -1,23 +1,13 @@
 import React from 'react';
 import './movieList.css';
-import propTypes from 'prop-types';
 import MovieCard from '../movieCard';
 
-const MovieList = function MovieList (props) {
-    const {moviesData} = props
-  return(
+const MovieList = function MovieList() {
+  return (
     <div className="card-list">
-        <MovieCard moviesData={moviesData} />
+      <MovieCard />
     </div>
-  )};
+  );
+};
 
 export default MovieList;
-
-MovieList.defaultProps = {
-    moviesData: []
-}
-
-MovieList.propTypes = {
-    moviesData: propTypes.instanceOf(Array)
-}
-

@@ -100,7 +100,6 @@ div .ant-card-body::after {
 
 
 .card-tags {
-
     grid-column: 2/4;
     grid-row: 3/4;
     margin-top: 5px;
@@ -124,6 +123,7 @@ div .ant-card-body::after {
     font-size: 14px;
     align-self: stretch;
     justify-self: stretch;
+    text-align: left;
 
 }
 @media (max-width: 900px ) {
@@ -157,8 +157,6 @@ ul.ant-rate {
 
 @media (max-width: 450px ) {
     ul.ant-rate {
-
         font-size: 14px
-
     }
 }
