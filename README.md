@@ -1,3 +1,3 @@
-https://movie-db-lovat.vercel.app/
+https://movie-db-getvitz.vercel.app
 
 Movie App Mikhailov Vladimir
