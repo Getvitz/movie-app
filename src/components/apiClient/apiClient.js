@@ -3,7 +3,7 @@ export default class ApiClient {
 
   apiBase = 'https://api.themoviedb.org/3';
 
-  apiStart = `${this.apiBase}/discover/movie?sort_by=popularity.desc&${this.apiKey}`;
+  apiStart = `${this.apiBase}/discover/movie?primary_release_year=2022&sort_by=vote_average.desc&${this.apiKey}`;
 
   apiSearch = `${this.apiBase}/search/movie?${this.apiKey}&language=en-US&page=1&include_adult=false&query=`;
 
