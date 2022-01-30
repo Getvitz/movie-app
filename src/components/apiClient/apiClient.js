@@ -1,5 +1,5 @@
-export default class ApiClient {
-  apiKey = 'api_key=2e3929e3fdbe72846ccea38bd13b28b2';
+class ApiClient {
+  apiKey = process.env.REACT_APP_API_KEY;
 
   apiBase = 'https://api.themoviedb.org/3';
 
@@ -12,17 +12,11 @@ export default class ApiClient {
   apiGuestSession = `${this.apiBase}/authentication/guest_session/new?${this.apiKey}`;
 
   getDataFromServer = async (url) => {
-    try {
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`${res.status}`);
       }
-      return await res.json();
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Cant load data from DataBase: ', err.message);
-      return err.message;
-    }
+      return res.json();
   };
 
   searchMovies = async (searchInput, pageNumber = 1) => {
@@ -48,10 +42,8 @@ export default class ApiClient {
         'Content-Type': 'application/json;charset=utf-8',
       },
       body: JSON.stringify(body),
-    }).catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error('Возникла проблема с fetch запросом: ', err.message);
-    });
+    })
+    // window.localStorage.setItem(id, JSON.stringify(rating));
   };
 
   getRatedFilms = async (sessionId, pageNumber = 1) => {
@@ -77,3 +69,5 @@ export default class ApiClient {
     return body;
   };
 }
+
+export default new ApiClient();

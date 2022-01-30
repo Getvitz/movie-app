@@ -25,7 +25,6 @@ const MovieCard = () => {
 
     const filmGenres = (
       <>
-        {/* eslint-disable-next-line arrow-body-style */}
         {genres.map((genre) => {
           return (
             <Tag className="card-genres-tag" key={genre}>

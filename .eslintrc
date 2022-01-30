@@ -33,6 +33,8 @@
         "assert": "either"
       }],
       "react/state-in-constructor": ["off"],
+      "arrow-body-style": ["off"],
+      "react/jsx-no-constructed-context-values": ["off"],
       "react/jsx-props-no-spreading": ["off"],
       "react/static-property-placement": "off",
       "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]

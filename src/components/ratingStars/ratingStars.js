@@ -2,34 +2,36 @@ import React from 'react';
 import { Rate } from 'antd';
 import { Component } from 'react/cjs/react.production.min';
 import propTypes from 'prop-types';
-import ApiClient from '../apiClient';
+import apiClient from '../apiClient';
 
 export default class RatingStars extends Component {
   state = {
-    // eslint-disable-next-line react/destructuring-assignment, react/prop-types
-    rating: `${this.props.rating}`,
+    rating: 0,
   };
-
-  apiClient = new ApiClient();
 
   setRating = (value) => {
     const { sessionId, id } = this.props;
+    window.localStorage.setItem(id, JSON.stringify(value));
     this.setState({
       rating: value,
     });
-    if (value === 0) this.apiClient.deleteRatedMovie(id, sessionId);
-    this.apiClient.rateMovie(id, sessionId, value);
+    if (!value) {
+      apiClient.deleteRatedMovie(id, sessionId);
+      window.localStorage.removeItem(id);
+    }
+    apiClient.rateMovie(id, sessionId, value);
   };
 
   render() {
     const { rating } = this.state;
+    const { id } = this.props;
     return (
       <Rate
         count="10"
-        value={rating}
         onChange={(value) => {
           this.setRating(value);
         }}
+        value={window.localStorage.getItem(id) ? JSON.parse(window.localStorage.getItem(id)) : rating}
       />
     );
   }

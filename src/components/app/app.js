@@ -1,12 +1,12 @@
 import React from 'react';
 import { Component } from 'react/cjs/react.production.min';
-import { Alert, Spin, Pagination } from 'antd';
+import { Alert, Spin, Pagination, Empty } from 'antd';
 import { format, parseISO } from 'date-fns';
 import propTypes from 'prop-types';
 import Context from '../context';
 import MovieList from '../movieList/movieList';
 import './app.css';
-import ApiClient from '../apiClient';
+import apiClient from '../apiClient';
 import Header from '../header';
 import Search from '../search';
 import noImageYet from './no-image-yet.jpg';
@@ -21,15 +21,15 @@ export default class App extends Component {
     pagesTotal: 0,
     loading: true,
     error: false,
-    sessionId: '',
+    sessionId: window.localStorage.getItem('sessionId') ? JSON.parse(window.localStorage.getItem('sessionId')) : '',
     searchOn: true,
     mode: 'showdefault',
+    noData: false
   };
 
-  apiClient = new ApiClient();
-
   componentDidMount() {
-    this.createGuestSession();
+    const {sessionId} = this.state;
+    if(!sessionId) this.createGuestSession();
     this.getGenresList();
     this.getMoviesData();
   }
@@ -40,9 +40,10 @@ export default class App extends Component {
       moviesData: [],
       loading: true,
       error: false,
+      noData: false
     });
-    if (searchInput === '') {
-      this.apiClient.startMovies(pageNumber).then((movies) => {
+    if (!searchInput) {
+      apiClient.startMovies(pageNumber).then((movies) => {
         this.setState({
           pagesTotal: movies.total_pages,
           pageNumber,
@@ -52,7 +53,7 @@ export default class App extends Component {
         });
       });
     } else {
-      this.apiClient
+      apiClient
         .searchMovies(searchInput, pageNumber)
         .then((movies) => {
           this.setState({
@@ -62,6 +63,7 @@ export default class App extends Component {
           if (movies.results.length === 0) {
             this.setState({
               loading: false,
+              noData: true
             });
           }
           movies.results.forEach((elm) => {
@@ -73,11 +75,18 @@ export default class App extends Component {
   };
 
   createGuestSession = async () => {
-    const url = this.apiClient.apiGuestSession;
-    const body = await this.apiClient.getDataFromServer(url);
+    this.setState({
+      sessionId: window.localStorage.getItem('sessionId') ? JSON.parse(window.localStorage.getItem('sessionId')) : '',
+    })
+    const {sessionId} = this.state;
+    if(!sessionId) { 
+    const url = apiClient.apiGuestSession;
+    const body = await apiClient.getDataFromServer(url);
+    window.localStorage.setItem('sessionId', JSON.stringify(body.guest_session_id));
     this.setState({
       sessionId: body.guest_session_id,
     });
+  }
   };
 
   getRatedMovies = async () => {
@@ -86,8 +95,9 @@ export default class App extends Component {
       ratedFilms: [],
       loading: true,
       error: false,
+      noData: false
     });
-    this.apiClient
+    apiClient
       .getRatedFilms(sessionId, pageNumber)
       .then((movies) => {
         this.setState({
@@ -100,6 +110,7 @@ export default class App extends Component {
         if (movies.results.length === 0) {
           this.setState({
             loading: false,
+            noData: true
           });
         }
       })
@@ -107,7 +118,7 @@ export default class App extends Component {
   };
 
   getGenresList = () => {
-    this.apiClient
+    apiClient
       .getGenresList()
       .then((body) => {
         this.setState({
@@ -131,7 +142,7 @@ export default class App extends Component {
   };
 
   onTabsChange = (key) => {
-    if (key === '1') {
+    if (key === 'search') {
       this.setState(
         {
           searchOn: true,
@@ -142,7 +153,7 @@ export default class App extends Component {
         }
       );
     }
-    if (key === '2') {
+    if (key === 'rated') {
       this.setState(
         {
           searchOn: false,
@@ -162,7 +173,7 @@ export default class App extends Component {
     }
     let moviePoster = `${noImageYet}`;
     if (movie.poster_path) {
-      moviePoster = `${this.apiClient.apiImg}${movie.poster_path}`;
+      moviePoster = `${apiClient.apiImg}${movie.poster_path}`;
     }
     const filmGenres = this.getGenres(movie.genre_ids);
     return {
@@ -171,7 +182,7 @@ export default class App extends Component {
       title: movie.title,
       releaseDate,
       overview: movie.overview,
-      rating: movie.rating,
+      rating: window.localStorage.getItem(movie.id) ? JSON.parse(window.localStorage.getItem(movie.id)) : 0,
       popularity: movie.vote_average,
       genres: filmGenres,
     };
@@ -210,6 +221,7 @@ export default class App extends Component {
     this.setState({
       loading: false,
       error: true,
+      noData: false
     });
   };
 
@@ -237,22 +249,20 @@ export default class App extends Component {
   };
 
   render() {
-    const { moviesData, ratedFilms, loading, error, pageNumber, pagesTotal, searchOn, sessionId, mode } = this.state;
-    // eslint-disable-next-line react/jsx-no-constructed-context-values
+    const { moviesData, ratedFilms, loading, error, pageNumber, pagesTotal, searchOn, sessionId, mode, noData } = this.state;
     const contextValue = { moviesData, ratedFilms, mode, sessionId };
-    const hasData = !(loading || error);
+    const hasData = !(loading && noData || error);
     const spinner = loading ? <Spin tip="Loading..." className="spinner" size="large" /> : null;
-    const content = hasData ? (
+    const content = hasData && !noData? (
       <MoviesLoaded
         pageNumber={pageNumber}
         pagesTotal={pagesTotal}
         loading={loading}
         onPageChange={this.onPageChange}
       />
-    ) : null;
-    const showError = error ? (
-      <Alert message="Error" description="Oops! Something went wrong!" type="error" showIcon />
-    ) : null;
+    ) : (<Empty />);
+    const showError = error && (<Alert message="Error" description="Oops! Something went wrong!" type="error" showIcon />);
+    
     return (
       <div className="container">
         <Context.Provider value={contextValue}>
